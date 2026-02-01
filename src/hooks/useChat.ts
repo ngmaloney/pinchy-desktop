@@ -260,12 +260,20 @@ export function useChat(
       activeRunIdRef.current = ack.runId ?? null
     } catch (err) {
       console.error('[useChat] Failed to send:', err)
+      
+      let errorMsg = err instanceof Error ? err.message : 'Failed to send message'
+      
+      // Detect WebSocket 1009 "Message Too Large" error
+      if (errorMsg.includes('1009') || errorMsg.toLowerCase().includes('too large')) {
+        errorMsg = `⚠️ **Message too large for gateway**\n\nYour OpenClaw gateway has a 1MB message limit. To send larger attachments, increase the limit by adding this to \`~/.openclaw/openclaw.json\`:\n\n\`\`\`json\n{\n  "gateway": {\n    "controlUi": {\n      "maxPayload": 10485760\n    }\n  }\n}\n\`\`\`\n\nThen restart your gateway with \`openclaw gateway restart\`.`
+      }
+      
       setMessages((prev) => [...prev, {
         id: newMsgId(),
         role: 'assistant',
         text: '',
         streaming: false,
-        error: err instanceof Error ? err.message : 'Failed to send message',
+        error: errorMsg,
       }])
       setIsStreaming(false)
     }
