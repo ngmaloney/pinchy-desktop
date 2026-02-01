@@ -128,7 +128,6 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true,
       nodeIntegration: false,
-      webSecurity: false, // Allow blob URLs and data URIs in dev
     },
   })
 

@@ -24,43 +24,47 @@ function formatTime(ts?: string | number): string {
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user'
 
-  // Convert data URI images to blob URLs to avoid CSP issues
-  const processedText = useMemo(() => {
-    if (!message.text) return ''
-    
-    console.log('[MessageBubble] Raw message text:', message.text.substring(0, 200))
+  // Extract data URI images from markdown and convert to attachments
+  const { processedText, extractedAttachments } = useMemo(() => {
+    if (!message.text) return { processedText: '', extractedAttachments: [] }
     
     const dataUriPattern = /!\[([^\]]*)\]\(data:(image\/[^;]+);base64,([^)]+)\)/g
     let text = message.text
-    const matches = [...text.matchAll(dataUriPattern)]
+    const extracted: Array<{
+      type: string
+      mimeType: string
+      fileName: string
+      content: string
+    }> = []
     
-    console.log('[MessageBubble] Found data URI images:', matches.length)
+    const matches = [...text.matchAll(dataUriPattern)]
     
     for (const match of matches) {
       const [fullMatch, alt, mimeType, base64Data] = match
-      console.log('[MessageBubble] Processing data URI:', { alt, mimeType, base64Length: base64Data.length })
       try {
-        // Convert base64 to blob
+        // Clean up base64 data
         const cleanedBase64 = base64Data.replace(/\s/g, '')
-        const binaryString = atob(cleanedBase64)
-        const bytes = new Uint8Array(binaryString.length)
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i)
-        }
-        const blob = new Blob([bytes], { type: mimeType })
-        const blobUrl = URL.createObjectURL(blob)
         
-        console.log('[MessageBubble] Created blob URL:', blobUrl)
+        // Create attachment object
+        extracted.push({
+          type: 'image',
+          mimeType,
+          fileName: alt || 'image.png',
+          content: cleanedBase64,
+        })
         
-        // Replace data URI with blob URL
-        text = text.replace(fullMatch, `![${alt}](${blobUrl})`)
+        // Remove the markdown image from text
+        text = text.replace(fullMatch, '')
       } catch (err) {
-        console.error('[MessageBubble] Failed to convert data URI to blob:', err)
+        console.error('[MessageBubble] Failed to extract data URI:', err)
       }
     }
     
-    return text
+    return { processedText: text.trim(), extractedAttachments: extracted }
   }, [message.text])
+
+  // Combine original attachments with extracted ones
+  const allAttachments = [...(message.attachments || []), ...extractedAttachments]
 
   return (
     <div style={{
@@ -95,9 +99,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {/* Attachments */}
-        {message.attachments && message.attachments.length > 0 && (
+        {allAttachments.length > 0 && (
           <div>
-            {message.attachments.map((attachment, index) => (
+            {allAttachments.map((attachment, index) => (
               <MessageAttachment key={index} attachment={attachment} />
             ))}
           </div>
@@ -151,31 +155,6 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                       style={{ color: '#60a5fa', textDecoration: 'underline' }}
                       target="_blank"
                       rel="noopener noreferrer"
-                    />
-                  )
-                },
-                img(props: ComponentPropsWithoutRef<'img'>) {
-                  const { src, alt } = props
-                  return (
-                    <img
-                      {...props}
-                      alt={alt || 'Image'}
-                      style={{
-                        maxWidth: '100%',
-                        maxHeight: '300px',
-                        borderRadius: '6px',
-                        marginTop: '0.5rem',
-                        marginBottom: '0.5rem',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => {
-                        if (src) {
-                          const win = window.open()
-                          if (win) {
-                            win.document.write(`<img src="${src}" style="max-width:100%; height:auto;" />`)
-                          }
-                        }
-                      }}
                     />
                   )
                 },
