@@ -2,6 +2,8 @@
   <img src="clawchat-icon.png" alt="ClawChat" width="200">
 </p>
 
+<h1 align="center">💬 ClawChat</h1>
+
 <p align="center"><strong>A desktop chat client for OpenClaw.</strong> Chat with your AI agent directly from your desktop.</p>
 
 ---
