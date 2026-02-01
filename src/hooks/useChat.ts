@@ -97,9 +97,18 @@ export function useChat(
   const [historyLoading, setHistoryLoading] = useState(false)
   const activeRunIdRef = useRef<string | null>(null)
   const sessionKeyRef = useRef(activeSessionKey)
+  // Cache messages per session to avoid losing local state on session switch
+  const messagesCacheRef = useRef<Map<string, DisplayMessage[]>>(new Map())
 
   // Keep ref in sync
   sessionKeyRef.current = activeSessionKey
+  
+  // Cache current messages when they change
+  useEffect(() => {
+    if (activeSessionKey && messages.length > 0) {
+      messagesCacheRef.current.set(activeSessionKey, messages)
+    }
+  }, [activeSessionKey, messages])
 
   // Subscribe to chat events
   useEffect(() => {
@@ -187,6 +196,13 @@ export function useChat(
   // Load history when session changes
   const loadHistory = useCallback(async (sessionKey: string) => {
     if (!client || status !== 'connected') return
+    
+    // Restore from cache immediately if available (for instant UI feedback)
+    const cached = messagesCacheRef.current.get(sessionKey)
+    if (cached) {
+      setMessages(cached)
+    }
+    
     setHistoryLoading(true)
     try {
       const res = await client.call('chat.history', {
@@ -204,10 +220,17 @@ export function useChat(
           attachments: filterLargeAttachments(m.attachments),
           streaming: false,
         }))
+      
+      // Update messages with fresh history from gateway
       setMessages(history)
+      // Update cache with fresh data
+      messagesCacheRef.current.set(sessionKey, history)
     } catch (err) {
       console.error('[useChat] Failed to load history:', err)
-      setMessages([])
+      // Don't clear messages on error - keep the cached version if we have it
+      if (!cached) {
+        setMessages([])
+      }
     } finally {
       setHistoryLoading(false)
     }
@@ -215,11 +238,16 @@ export function useChat(
 
   // Reload history when active session changes
   useEffect(() => {
+    // Only load history when connected and session key is available
     if (status === 'connected' && activeSessionKey) {
       void loadHistory(activeSessionKey)
-    } else {
+    } else if (!activeSessionKey) {
+      // Only clear messages if there's no active session
       setMessages([])
     }
+    // If disconnected but session key exists, keep existing messages
+    // (don't clear on temporary disconnections)
+    
     // Reset streaming state on session switch
     activeRunIdRef.current = null
     setIsStreaming(false)
