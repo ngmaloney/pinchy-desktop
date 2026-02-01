@@ -1,26 +1,38 @@
-# 💬 ClawChat
+<p align="center">
+  <img src="clawchat-icon.png" alt="ClawChat" width="200">
+</p>
 
-A desktop chat client for [OpenClaw](https://github.com/openclaw/openclaw) — chat with your AI agent directly from your desktop.
+<p align="center"><strong>A desktop chat client for OpenClaw.</strong> Chat with your AI agent directly from your desktop.</p>
 
-![Logo](clawchat-logo.png)
+---
 
 ![Electron](https://img.shields.io/badge/Electron-30-47848F?logo=electron)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
 
+![ClawChat Screenshot](screenshot.png)
+
+## Privacy-First, Self-Hosted
+
+ClawChat is designed to run entirely on your own network. Your conversations, credentials, and data never leave your infrastructure.
+
+- **Local gateway connection** — Connect to your self-hosted OpenClaw gateway via WebSocket
+- **Private credentials** — Stored locally on your machine, never transmitted to third parties
+- **Full control** — Run OpenClaw on your own hardware, manage your own data
+- **Air-gapped deployments** — Works without internet connectivity (gateway and client on local network)
+
 ## Features
 
 - **Full chat UI** — Send messages, receive streamed responses with live text updates
 - **Markdown rendering** — Code blocks with syntax highlighting, bold, italic, links, lists
-- **Image attachments** — Upload and view images inline (user→assistant, with workarounds for assistant→user)
-- **Session management** — Switch between sessions from the sidebar
-- **Gateway protocol v3** — Proper handshake, request/response correlation, event streaming
-- **Auto-reconnect** — Exponential backoff reconnection on network drops
-- **Persistent credentials** — Gateway URL and token saved locally via `electron-store`
-- **Stop button** — Abort in-flight agent responses
-- **DevTools toggle** — F12 or Ctrl+Shift+I to open developer tools
+- **Image attachments** — Upload and view images inline
+- **Session management** — Switch between multiple chat sessions
+- **Slash commands** — Type `/` to access commands like `/new`, `/model`, `/thinking`, `/status`, etc.
+- **Auto-reconnect** — Resilient WebSocket connection with exponential backoff
+- **Persistent credentials** — Saved locally for auto-connect on launch
+- **DevTools access** — F12 or Ctrl+Shift+I for debugging
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
@@ -35,94 +47,107 @@ cd clawchat
 npm install
 ```
 
-### Run (dev mode)
+### Development
 
 ```bash
 npm run dev
 ```
 
-This launches the Electron app with Vite HMR for the renderer process.
-
-### Build
+### Production Build
 
 ```bash
 npm run build
 ```
 
-Produces packaged Electron binaries via `electron-builder`.
+Outputs packaged binaries to `release/` directory.
 
 ## Connecting
 
-1. Launch the app
-2. Enter your Gateway URL (default: `ws://localhost:18789`)
-3. Enter your Gateway auth token
+### Local Gateway
+
+1. Launch ClawChat
+2. Enter your gateway URL (e.g., `ws://localhost:18789`)
+3. Enter your gateway auth token
 4. Click **Connect**
 
-Credentials are saved locally and the app will auto-connect on next launch.
+Your credentials are saved locally and the app will auto-connect on subsequent launches.
 
-> **Note:** The Gateway must have `gateway.controlUi.allowInsecureAuth: true` set in config if connecting over plain WebSocket without device identity.
+## Using Slash Commands
 
-## Architecture
+ClawChat supports OpenClaw slash commands for controlling your agent and session. Type `/` in the message input to see available commands:
 
+- `/new` — Start a new session
+- `/model` — Show or switch models
+- `/thinking` — Toggle extended thinking mode
+- `/status` — Show session status and token usage
+- `/stop` — Abort current generation
+- `/compact` — Summarize and compress session history
+- `/verbose` — Toggle verbose output
+- `/reset` — Reset the current session
+
+Commands autocomplete as you type. Just start typing `/` and select from the menu.
+
+### Remote Gateway via SSH Tunnel
+
+If your OpenClaw gateway runs on a different machine (e.g., a dedicated server), use SSH port forwarding to securely tunnel the connection:
+
+```bash
+ssh -N -L 18789:127.0.0.1:18789 your-gateway-host
 ```
-electron/
-  main.ts              # Electron main process + IPC handlers (electron-store, file dialogs)
-  preload.ts           # Context bridge (secure API for renderer)
 
-src/
-  lib/
-    gateway-client.ts  # Protocol-aware WebSocket client (handshake, req/res, events)
-  hooks/
-    useGateway.ts      # React hook wrapping GatewayClient
-    useChat.ts         # Chat state: messages, send, abort, streaming, attachment filtering
-    useSessions.ts     # Session list + active session management
-  components/
-    ConnectScreen.tsx   # Auth form (URL + token)
-    Dashboard.tsx       # Main layout (sidebar + chat + status bar)
-    Sidebar.tsx         # Session list
-    ChatView.tsx        # Message list with auto-scroll + streaming indicator
-    MessageBubble.tsx   # Individual message with markdown + syntax highlighting + attachments
-    MessageInput.tsx    # Auto-grow textarea + send/stop buttons + file upload
-    MessageAttachment.tsx # Display image/file attachments with size limits
-    StatusBar.tsx       # Connection status indicator
-  types/
-    protocol.ts        # TypeScript types for Gateway WS protocol v3
-    global.d.ts        # Window.api type declarations
+Example:
+```bash
+ssh -N -L 18789:127.0.0.1:18789 ts140
 ```
+
+Then connect ClawChat to `ws://localhost:18789` as if the gateway were local. The SSH tunnel encrypts all traffic between your desktop and the gateway server.
+
+> **Note:** For local WebSocket connections without device identity, ensure your gateway config has `gateway.controlUi.allowInsecureAuth: true` set.
 
 ## Tech Stack
 
-- **Electron** — Desktop shell
-- **React 18** — UI framework
+- **Electron** — Cross-platform desktop runtime
+- **React 18** — UI framework with hooks
 - **TypeScript** — Type safety
-- **Vite** — Build tooling + HMR
+- **Vite** — Fast build tooling with HMR
 - **react-markdown** + **remark-gfm** — Markdown rendering
-- **react-syntax-highlighter** — Code block highlighting
-- **electron-store** — Persistent local storage
+- **react-syntax-highlighter** — Code syntax highlighting
+- **electron-store** — Local credential storage
 
-## Roadmap
+## Architecture
 
-- [x] Phase 1: Scaffold (Electron + React + Vite + Tailwind)
-- [x] Phase 2: WebSocket Connection & Auth
-- [x] Phase 3: Chat UI (streaming, markdown, sessions)
-- [x] Phase 3.5: File & Image Attachments (user→assistant)
-- [ ] Phase 4: Assistant→user attachments (pending OpenClaw operator protocol support)
-- [ ] Phase 5: Settings/Config Screen
-- [ ] Phase 6: Session Management UI
-- [ ] Future: Additional integrations
+ClawChat implements the OpenClaw Gateway Protocol v3, including proper handshake, request/response correlation, and event streaming.
 
-## Part of the Claw Family
+```
+electron/          # Main process (Node.js)
+  main.ts          # App lifecycle, IPC handlers
+  preload.ts       # Secure context bridge
 
-ClawChat is part of the growing Claw ecosystem of AI agent tools:
+src/               # Renderer process (React)
+  lib/
+    gateway-client.ts    # WebSocket protocol implementation
+  hooks/
+    useGateway.ts        # Connection state management
+    useChat.ts           # Message & session state
+  components/
+    Dashboard.tsx        # Main UI layout
+    ChatView.tsx         # Message list
+    MessageInput.tsx     # Input with file upload
+    ...
+```
+
+## Part of the Claw Ecosystem
 
 - 🦀 **[ClawMail](https://clawmail.dev)** — Email proxy for AI agents
-- 💬 **ClawChat** — Desktop chat client (this project)
+- 💬 **ClawChat** — Desktop chat client
 - 📦 **ClawDrop** — Ephemeral file storage (coming soon)
+
+All Claw tools prioritize privacy, self-hosting, and giving you complete control over your AI agent infrastructure.
 
 ## License
 
 Private — not yet published.
 
-## Website
+---
 
-[clawchat.dev](https://clawchat.dev)
+**Website:** [clawchat.dev](https://clawchat.dev)
