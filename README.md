@@ -4,7 +4,7 @@
 
 <h1 align="center">💬 ClawChat</h1>
 
-<p align="center"><strong>A desktop chat client for OpenClaw.</strong> Chat with your AI agent directly from your desktop.</p>
+<p align="center"><strong>Simple desktop client for remote OpenClaw gateways.</strong><br>No Node.js, no npm, no complexity — just download and connect.</p>
 
 ---
 
@@ -13,6 +13,32 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
 
 ![ClawChat Screenshot](screenshot.png)
+
+## Why ClawChat?
+
+ClawChat fills a specific gap in the OpenClaw ecosystem: **simple desktop access to remote gateways**.
+
+### When to use ClawChat:
+
+- ✅ Your gateway runs on a **server** (Linux/remote Mac) and you want to connect from your laptop
+- ✅ You're on **Windows or Linux** (no official OpenClaw desktop app for these platforms)
+- ✅ You want a **lightweight client** without installing Node.js, npm, or managing the gateway locally
+- ✅ You prefer **SSH/Tailscale** setups with a remote gateway
+
+### When to use the official OpenClaw macOS app:
+
+- ✅ You want to **run the gateway locally** on your Mac
+- ✅ You need **native macOS integrations** (TCC permissions, system notifications, etc.)
+- ✅ You want the app to **manage the gateway lifecycle** for you
+
+**Both are great!** Pick the client that matches your setup. [Learn more about OpenClaw](https://github.com/openclaw/openclaw).
+
+> **🎯 Quick Guide:**
+> - Run gateway locally on Mac? → [OpenClaw macOS App](https://github.com/openclaw/openclaw)
+> - Run gateway on a server (Linux/remote Mac)? → **ClawChat**
+> - Using Windows or Linux? → **ClawChat** (only cross-platform option)
+
+---
 
 ## Download
 
@@ -24,14 +50,16 @@ Pre-built releases for macOS, Windows, and Linux are available on the [Releases]
 
 Or build from source (see [Quick Start](#quick-start) below).
 
-## Privacy-First, Self-Hosted
+## Perfect for Remote Gateways
 
-ClawChat is designed to run entirely on your own network. Your conversations, credentials, and data never leave your infrastructure.
+ClawChat excels at connecting to **OpenClaw gateways running elsewhere** — whether that's a dedicated server, a home lab, or a cloud instance. 
 
-- **Local gateway connection** — Connect to your self-hosted OpenClaw gateway via WebSocket
-- **Private credentials** — Stored locally on your machine, never transmitted to third parties
-- **Full control** — Run OpenClaw on your own hardware, manage your own data
-- **Air-gapped deployments** — Works without internet connectivity (gateway and client on local network)
+**Common setup:**
+1. Run OpenClaw gateway on a Linux server or remote Mac (via SSH/Tailscale)
+2. Install ClawChat on your laptop (Mac, Windows, or Linux)
+3. Connect via WebSocket — no Node.js installation required on your laptop
+
+Your conversations and credentials stay on your infrastructure. ClawChat is just a lightweight UI that talks to your gateway.
 
 ## Features
 
@@ -42,7 +70,14 @@ ClawChat is designed to run entirely on your own network. Your conversations, cr
 - **Slash commands** — Type `/` to access commands like `/new`, `/model`, `/thinking`, `/status`, etc.
 - **Auto-reconnect** — Resilient WebSocket connection with exponential backoff
 - **Persistent credentials** — Saved locally for auto-connect on launch
+- **Cross-platform** — macOS, Windows, and Linux support
 - **DevTools access** — F12 or Ctrl+Shift+I for debugging
+
+### 🚧 Coming Soon: Node Mode
+
+Node mode (camera, screen recording, system commands) is currently in development. This will allow ClawChat to act as an OpenClaw node, enabling the gateway to access your local machine's capabilities — making ClawChat the **only cross-platform node solution** for Windows and Linux users.
+
+See the [`feature/node-mode-poc`](https://github.com/ngmaloney/clawchat/tree/feature/node-mode-poc) branch for early testing.
 
 ## Quick Start
 
