@@ -164,14 +164,21 @@ export class GatewayClient {
     }
 
     ws.onclose = (ev) => {
-      console.log(`[GatewayClient] WS closed (code: ${ev.code})`)
+      console.log(`[GatewayClient] WS closed (code: ${ev.code}, reason: ${ev.reason})`)
       this.ws = null
-      this._rejectAllPending('WebSocket closed')
+      this._rejectAllPending(`WebSocket closed (code: ${ev.code})`)
 
-      if (!this.intentionalClose) {
+      // Fatal codes: 1008 (Policy Violation), 4xxx (App specific), etc.
+      // Gateway uses 4008 for auth failure during upgrade, 1008 for protocol violations.
+      const isFatal = ev.code === 1008 || (ev.code >= 4000 && ev.code < 5000)
+
+      if (!this.intentionalClose && !isFatal) {
         this._scheduleReconnect()
       } else {
-        this._setStatus('disconnected')
+        this._setStatus(isFatal ? 'error' : 'disconnected')
+        if (isFatal) {
+          console.error(`[GatewayClient] Fatal connection error: ${ev.code} ${ev.reason}`)
+        }
       }
     }
 
