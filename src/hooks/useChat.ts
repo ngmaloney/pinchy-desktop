@@ -259,14 +259,25 @@ export function useChat(
 
       activeRunIdRef.current = ack.runId ?? null
     } catch (err) {
-      console.error('[useChat] Failed to send:', err)
-      setMessages((prev) => [...prev, {
-        id: newMsgId(),
-        role: 'assistant',
-        text: '',
-        streaming: false,
-        error: err instanceof Error ? err.message : 'Failed to send message',
-      }])
+      console.error('[useChat] Failed to send message:', err)
+      console.error('[useChat] Message length:', text.length)
+      console.error('[useChat] Attachments count:', attachments?.length || 0)
+      if (attachments && attachments.length > 0) {
+        console.error('[useChat] Attachment sizes:', attachments.map(a => `${a.fileName}: ${Math.round((a.content?.length || 0) / 1024)}KB`))
+      }
+      
+      const errorMsg = err instanceof Error ? err.message : 'Failed to send message'
+      console.error('[useChat] Error message:', errorMsg)
+      
+      // Mark the user message as failed instead of adding an assistant error
+      setMessages((prev) => {
+        const updated = [...prev]
+        const lastMsg = updated[updated.length - 1]
+        if (lastMsg && lastMsg.role === 'user') {
+          lastMsg.error = errorMsg
+        }
+        return updated
+      })
       setIsStreaming(false)
     }
   }, [client, status])
