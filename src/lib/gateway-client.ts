@@ -57,6 +57,7 @@ export class GatewayClient {
   private retryCount = 0
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null
   private intentionalClose = false
+  private gatewayMaxPayload: number = 1048576 // Default 1MB
 
   private readonly url: string
   private readonly token: string
@@ -78,6 +79,10 @@ export class GatewayClient {
 
   getStatus(): ConnectionStatus {
     return this.status
+  }
+
+  getMaxPayload(): number {
+    return this.gatewayMaxPayload
   }
 
   connect(): void {
@@ -315,6 +320,14 @@ export class GatewayClient {
 
       if ((payload as Record<string, unknown>).type === 'hello-ok') {
         console.log('[GatewayClient] Handshake complete — connected!')
+        
+        // Extract maxPayload from policy if available
+        const snapshot = (payload as any).snapshot
+        if (snapshot?.policy?.maxPayload) {
+          this.gatewayMaxPayload = snapshot.policy.maxPayload
+          console.log('[GatewayClient] Gateway maxPayload:', this.gatewayMaxPayload)
+        }
+        
         this.retryCount = 0
         this._setStatus('connected')
       } else {
