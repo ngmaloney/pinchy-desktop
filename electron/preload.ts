@@ -7,6 +7,17 @@ contextBridge.exposeInMainWorld('api', {
     set: (key: string, value: unknown) => ipcRenderer.invoke('store:set', key, value),
     delete: (key: string) => ipcRenderer.invoke('store:delete', key),
   },
+  dialog: {
+    openFile: () => ipcRenderer.invoke('dialog:openFile') as Promise<string[]>,
+  },
+  file: {
+    read: (path: string) => ipcRenderer.invoke('file:read', path) as Promise<{
+      name: string
+      mimeType: string
+      base64: string
+      size: number
+    }>,
+  },
 })
 
 // Keep legacy ipcRenderer bridge for compatibility

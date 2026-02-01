@@ -7,6 +7,7 @@ import type {
   ChatAbortResponse,
   ChatEventPayload,
   ConnectionStatus,
+  ChatAttachment,
 } from '../types/protocol'
 
 export interface DisplayMessage {
@@ -16,11 +17,12 @@ export interface DisplayMessage {
   timestamp?: string | number
   streaming?: boolean
   error?: string
+  attachments?: ChatAttachment[]
 }
 
 export interface ChatHandle {
   messages: DisplayMessage[]
-  send: (text: string) => Promise<void>
+  send: (text: string, attachments?: ChatAttachment[]) => Promise<void>
   abort: () => Promise<void>
   loadHistory: (sessionKey: string) => Promise<void>
   isStreaming: boolean
@@ -180,7 +182,7 @@ export function useChat(
     setIsStreaming(false)
   }, [activeSessionKey, status, loadHistory])
 
-  const send = useCallback(async (text: string) => {
+  const send = useCallback(async (text: string, attachments?: ChatAttachment[]) => {
     if (!client || status !== 'connected' || !text.trim()) return
 
     // Append user message immediately
@@ -189,16 +191,28 @@ export function useChat(
       role: 'user',
       text: text.trim(),
       timestamp: new Date().toISOString(),
+      attachments,
     }
     setMessages((prev) => [...prev, userMsg])
     setIsStreaming(true)
 
     try {
-      const ack = await client.call('chat.send', {
+      const params: {
+        sessionKey: string
+        message: string
+        idempotencyKey: string
+        attachments?: ChatAttachment[]
+      } = {
         sessionKey: sessionKeyRef.current,
         message: text.trim(),
         idempotencyKey: uuid(),
-      }) as unknown as ChatSendAck
+      }
+      
+      if (attachments && attachments.length > 0) {
+        params.attachments = attachments
+      }
+
+      const ack = await client.call('chat.send', params) as unknown as ChatSendAck
 
       activeRunIdRef.current = ack.runId ?? null
     } catch (err) {

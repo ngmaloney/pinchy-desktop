@@ -70,11 +70,20 @@ export interface ChatMessage {
 
 // ── Chat methods ─────────────────────────────────────────────
 
+export interface ChatAttachment {
+  type: string
+  mimeType: string
+  fileName: string
+  content: string
+  size?: number
+}
+
 export interface ChatSendParams {
   sessionKey: string
   message: string
   idempotencyKey: string
   thinking?: string
+  attachments?: ChatAttachment[]
 }
 
 export interface ChatSendAck {

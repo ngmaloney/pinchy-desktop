@@ -4,6 +4,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { DisplayMessage } from '../hooks/useChat'
 import type { ComponentPropsWithoutRef } from 'react'
+import { MessageAttachment } from './MessageAttachment'
 
 interface MessageBubbleProps {
   message: DisplayMessage
@@ -51,6 +52,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             padding: '0.25rem 0',
           }}>
             ⚠ {message.error}
+          </div>
+        )}
+
+        {/* Attachments */}
+        {message.attachments && message.attachments.length > 0 && (
+          <div>
+            {message.attachments.map((attachment, index) => (
+              <MessageAttachment key={index} attachment={attachment} />
+            ))}
           </div>
         )}
 

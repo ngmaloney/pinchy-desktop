@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'node:fs/promises'
 import Store from 'electron-store'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -34,6 +35,66 @@ ipcMain.handle('store:set', (_event, key: string, value: unknown) => {
 
 ipcMain.handle('store:delete', (_event, key: string) => {
   getStore().delete(key as any)
+})
+
+// File dialog handler
+ipcMain.handle('dialog:openFile', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile', 'multiSelections'],
+    filters: [
+      { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] },
+      { name: 'Documents', extensions: ['pdf', 'txt', 'md', 'json', 'csv'] },
+      { name: 'Code', extensions: ['js', 'ts', 'py', 'rs', 'go', 'java', 'c', 'cpp', 'h'] },
+      { name: 'All Files', extensions: ['*'] },
+    ],
+  })
+  return result.filePaths
+})
+
+// File read handler
+ipcMain.handle('file:read', async (_event, filePath: string) => {
+  try {
+    const buffer = await fs.readFile(filePath)
+    const base64 = buffer.toString('base64')
+    const stats = await fs.stat(filePath)
+    const name = path.basename(filePath)
+    
+    // Simple mime type detection by extension
+    const ext = path.extname(filePath).toLowerCase().slice(1)
+    const mimeMap: Record<string, string> = {
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      svg: 'image/svg+xml',
+      pdf: 'application/pdf',
+      txt: 'text/plain',
+      md: 'text/markdown',
+      json: 'application/json',
+      csv: 'text/csv',
+      js: 'text/javascript',
+      ts: 'text/typescript',
+      py: 'text/x-python',
+      rs: 'text/x-rust',
+      go: 'text/x-go',
+      java: 'text/x-java',
+      c: 'text/x-c',
+      cpp: 'text/x-c++',
+      h: 'text/x-c',
+    }
+    const mimeType = mimeMap[ext] || 'application/octet-stream'
+
+    return {
+      name,
+      mimeType,
+      base64,
+      size: stats.size,
+    }
+  } catch (error) {
+    console.error('[Main] Failed to read file:', error)
+    throw error
+  }
 })
 
 // The built directory structure
