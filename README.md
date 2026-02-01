@@ -58,12 +58,29 @@ Outputs packaged binaries to `release/` directory.
 
 ## Connecting
 
+### Local Gateway
+
 1. Launch ClawChat
-2. Enter your gateway URL (e.g., `ws://localhost:18789` for local)
+2. Enter your gateway URL (e.g., `ws://localhost:18789`)
 3. Enter your gateway auth token
 4. Click **Connect**
 
 Your credentials are saved locally and the app will auto-connect on subsequent launches.
+
+### Remote Gateway via SSH Tunnel
+
+If your OpenClaw gateway runs on a different machine (e.g., a dedicated server), use SSH port forwarding to securely tunnel the connection:
+
+```bash
+ssh -N -L 18789:127.0.0.1:18789 your-gateway-host
+```
+
+Example:
+```bash
+ssh -N -L 18789:127.0.0.1:18789 ts140
+```
+
+Then connect ClawChat to `ws://localhost:18789` as if the gateway were local. The SSH tunnel encrypts all traffic between your desktop and the gateway server.
 
 > **Note:** For local WebSocket connections without device identity, ensure your gateway config has `gateway.controlUi.allowInsecureAuth: true` set.
 
