@@ -25,28 +25,23 @@ function App() {
     loadCredentials()
   }, [])
 
-  const handleMessage = useCallback((data: unknown) => {
-    console.log('[Gateway Message]', data)
-  }, [])
-
-  const { status, disconnect } = useGateway({
+  const { status, client, disconnect } = useGateway({
     url: credentials?.url || '',
     token: credentials?.token || '',
     autoConnect: !!credentials,
-    onMessage: handleMessage,
   })
 
-  const handleConnect = async (url: string, token: string) => {
+  const handleConnect = useCallback(async (url: string, token: string) => {
     setCredentials({ url, token })
     await window.api.store.set('gatewayUrl', url)
     await window.api.store.set('token', token)
-  }
+  }, [])
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = useCallback(async () => {
     disconnect()
     await window.api.store.delete('token')
     setCredentials(null)
-  }
+  }, [disconnect])
 
   if (loading) {
     return (
@@ -63,11 +58,11 @@ function App() {
     )
   }
 
-  if (!credentials || status === 'disconnected' && !credentials) {
+  if (!credentials) {
     return <ConnectScreen onConnect={handleConnect} status={status} />
   }
 
-  return <Dashboard status={status} onDisconnect={handleDisconnect} />
+  return <Dashboard status={status} client={client} onDisconnect={handleDisconnect} />
 }
 
 export default App

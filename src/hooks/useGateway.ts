@@ -1,103 +1,61 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { GatewayClient } from '../lib/gateway-client'
+import type { ConnectionStatus } from '../types/protocol'
 
-export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error'
+export type { ConnectionStatus }
 
 interface UseGatewayOptions {
   url: string
   token: string
   autoConnect?: boolean
-  onMessage?: (data: unknown) => void
 }
 
-const MAX_RETRIES = 5
-const BASE_DELAY = 1000
+export interface GatewayHandle {
+  status: ConnectionStatus
+  client: GatewayClient | null
+  connect: () => void
+  disconnect: () => void
+}
 
-export function useGateway({ url, token, autoConnect = false, onMessage }: UseGatewayOptions) {
+export function useGateway({ url, token, autoConnect = false }: UseGatewayOptions): GatewayHandle {
   const [status, setStatus] = useState<ConnectionStatus>('disconnected')
-  const wsRef = useRef<WebSocket | null>(null)
-  const retriesRef = useRef(0)
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const clientRef = useRef<GatewayClient | null>(null)
 
-  const cleanup = useCallback(() => {
-    if (reconnectTimerRef.current) {
-      clearTimeout(reconnectTimerRef.current)
-      reconnectTimerRef.current = null
-    }
-    if (wsRef.current) {
-      wsRef.current.onopen = null
-      wsRef.current.onclose = null
-      wsRef.current.onerror = null
-      wsRef.current.onmessage = null
-      wsRef.current.close()
-      wsRef.current = null
-    }
-  }, [])
-
-  const connect = useCallback(() => {
+  // Create / recreate the client when url or token change
+  useEffect(() => {
     if (!url || !token) return
 
-    cleanup()
-    setStatus('connecting')
+    const client = new GatewayClient({
+      url,
+      token,
+      onStatusChange: (s) => setStatus(s),
+    })
 
-    const wsUrl = `${url}${url.includes('?') ? '&' : '?'}token=${token}`
-    const ws = new WebSocket(wsUrl)
-    wsRef.current = ws
+    clientRef.current = client
 
-    ws.onopen = () => {
-      setStatus('connected')
-      retriesRef.current = 0
-      console.log('[Gateway] Connected')
+    if (autoConnect) {
+      client.connect()
     }
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        onMessage?.(data)
-      } catch {
-        console.warn('[Gateway] Non-JSON message:', event.data)
-      }
+    return () => {
+      client.disconnect()
+      clientRef.current = null
     }
+  }, [url, token, autoConnect])
 
-    ws.onclose = (event) => {
-      console.log(`[Gateway] Disconnected (code: ${event.code})`)
-      setStatus('disconnected')
-
-      // Reconnect with exponential backoff
-      if (retriesRef.current < MAX_RETRIES) {
-        const delay = BASE_DELAY * Math.pow(2, retriesRef.current)
-        retriesRef.current++
-        console.log(`[Gateway] Reconnecting in ${delay}ms (attempt ${retriesRef.current})`)
-        reconnectTimerRef.current = setTimeout(connect, delay)
-      } else {
-        setStatus('error')
-        console.error('[Gateway] Max retries reached')
-      }
-    }
-
-    ws.onerror = (err) => {
-      console.error('[Gateway] Error:', err)
-      setStatus('error')
-    }
-  }, [url, token, cleanup, onMessage])
-
-  const disconnect = useCallback(() => {
-    retriesRef.current = MAX_RETRIES // prevent reconnect
-    cleanup()
-    setStatus('disconnected')
-  }, [cleanup])
-
-  const send = useCallback((data: unknown) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(typeof data === 'string' ? data : JSON.stringify(data))
-    }
+  const connect = useCallback(() => {
+    clientRef.current?.connect()
   }, [])
 
-  useEffect(() => {
-    if (autoConnect && url && token) {
-      connect()
-    }
-    return cleanup
-  }, [autoConnect, url, token, connect, cleanup])
+  const disconnect = useCallback(() => {
+    clientRef.current?.disconnect()
+    setStatus('disconnected')
+  }, [])
 
-  return { status, connect, disconnect, send }
+  return {
+    status,
+    client: clientRef.current,
+    connect,
+    disconnect,
+  }
 }

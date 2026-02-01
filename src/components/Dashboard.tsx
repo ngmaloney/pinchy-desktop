@@ -1,11 +1,33 @@
-import { ConnectionStatus } from '../hooks/useGateway'
+import { Sidebar } from './Sidebar'
+import { ChatView } from './ChatView'
+import { StatusBar } from './StatusBar'
+import type { ConnectionStatus } from '../types/protocol'
+import type { GatewayClient } from '../lib/gateway-client'
+import { useSessions } from '../hooks/useSessions'
+import { useChat } from '../hooks/useChat'
 
 interface DashboardProps {
   status: ConnectionStatus
+  client: GatewayClient | null
   onDisconnect: () => void
 }
 
-export function Dashboard({ status, onDisconnect }: DashboardProps) {
+export function Dashboard({ status, client, onDisconnect }: DashboardProps) {
+  const {
+    sessions,
+    activeSessionKey,
+    setActiveSessionKey,
+    loading: sessionsLoading,
+  } = useSessions(client, status)
+
+  const {
+    messages,
+    send,
+    abort,
+    isStreaming,
+    historyLoading,
+  } = useChat(client, status, activeSessionKey)
+
   return (
     <div style={{
       display: 'flex',
@@ -15,67 +37,34 @@ export function Dashboard({ status, onDisconnect }: DashboardProps) {
       color: '#e0e0e0',
       fontFamily: 'system-ui, -apple-system, sans-serif',
     }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0.75rem 1rem',
-        borderBottom: '1px solid #2a2a4a',
-        backgroundColor: '#16213e',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>🦀</span>
-          <span style={{ fontWeight: 600 }}>Pinchy Desktop</span>
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.25rem',
-            fontSize: '0.75rem',
-            color: status === 'connected' ? '#22c55e' : '#ef4444',
-          }}>
-            <span style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: status === 'connected' ? '#22c55e' : '#ef4444',
-              display: 'inline-block',
-            }} />
-            {status === 'connected' ? 'Connected' : 'Disconnected'}
-          </span>
-        </div>
-
-        <button
-          onClick={onDisconnect}
-          style={{
-            padding: '0.375rem 0.75rem',
-            backgroundColor: 'transparent',
-            border: '1px solid #2a2a4a',
-            borderRadius: '4px',
-            color: '#888',
-            fontSize: '0.75rem',
-            cursor: 'pointer',
-          }}
-        >
-          Disconnect
-        </button>
-      </div>
-
-      {/* Main Content — placeholder for Phase 3 */}
+      {/* Main area: sidebar + chat */}
       <div style={{
         flex: 1,
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#555',
+        overflow: 'hidden',
       }}>
-        <div style={{ textAlign: 'center' }}>
-          <span style={{ fontSize: '3rem' }}>🦀</span>
-          <p style={{ marginTop: '1rem' }}>
-            Connected to Gateway. Chat UI coming in Phase 3!
-          </p>
-        </div>
+        <Sidebar
+          sessions={sessions}
+          activeSessionKey={activeSessionKey}
+          onSelectSession={setActiveSessionKey}
+          loading={sessionsLoading}
+        />
+        <ChatView
+          messages={messages}
+          isStreaming={isStreaming}
+          historyLoading={historyLoading}
+          status={status}
+          onSend={send}
+          onAbort={abort}
+        />
       </div>
+
+      {/* Status bar */}
+      <StatusBar
+        status={status}
+        activeSession={activeSessionKey}
+        onDisconnect={onDisconnect}
+      />
     </div>
   )
 }

@@ -66,3 +66,62 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Animations for chat UI */
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a4a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a6a;
+}
+
+/* Markdown content styling */
+.msg-content pre {
+  margin: 0.5rem 0;
+  overflow-x: auto;
+}
+
+.msg-content img {
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+.msg-content table {
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+}
+
+.msg-content th,
+.msg-content td {
+  border: 1px solid #2a2a4a;
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  font-size: 0.8rem;
+}
+
+.msg-content th {
+  background-color: #16213e;
+}
+
+.msg-content hr {
+  border: none;
+  border-top: 1px solid #2a2a4a;
+  margin: 0.75rem 0;
+}

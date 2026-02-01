@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ConnectionStatus } from '../hooks/useGateway'
+import type { ConnectionStatus } from '../types/protocol'
 
 interface ConnectScreenProps {
   onConnect: (url: string, token: string) => void
