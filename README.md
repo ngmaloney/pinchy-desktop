@@ -1,30 +1,109 @@
-# React + TypeScript + Vite
+# 🦀 Pinchy Desktop
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A desktop client for [OpenClaw](https://github.com/openclaw/openclaw) — chat with your AI agent directly from your desktop.
 
-Currently, two official plugins are available:
+![Electron](https://img.shields.io/badge/Electron-30-47848F?logo=electron)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- **Full chat UI** — Send messages, receive streamed responses with live text updates
+- **Markdown rendering** — Code blocks with syntax highlighting, bold, italic, links, lists
+- **Session management** — Switch between sessions from the sidebar
+- **Gateway protocol v3** — Proper handshake, request/response correlation, event streaming
+- **Auto-reconnect** — Exponential backoff reconnection on network drops
+- **Persistent credentials** — Gateway URL and token saved locally via `electron-store`
+- **Stop button** — Abort in-flight agent responses
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Getting Started
 
-- Configure the top-level `parserOptions` property like this:
+### Prerequisites
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+- [Node.js](https://nodejs.org/) 18+
+- A running [OpenClaw Gateway](https://docs.openclaw.ai)
+
+### Install
+
+```bash
+git clone git@github.com:ngmaloney/pinchy-desktop.git
+cd pinchy-desktop
+npm install
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Run (dev mode)
+
+```bash
+npm run dev
+```
+
+This launches the Electron app with Vite HMR for the renderer process.
+
+### Build
+
+```bash
+npm run build
+```
+
+Produces packaged Electron binaries via `electron-builder`.
+
+## Connecting
+
+1. Launch the app
+2. Enter your Gateway URL (default: `ws://localhost:18789`)
+3. Enter your Gateway auth token
+4. Click **Connect**
+
+Credentials are saved locally and the app will auto-connect on next launch.
+
+> **Note:** The Gateway must have `gateway.controlUi.allowInsecureAuth: true` set in config if connecting over plain WebSocket without device identity.
+
+## Architecture
+
+```
+electron/
+  main.ts              # Electron main process + IPC handlers (electron-store)
+  preload.ts           # Context bridge (secure API for renderer)
+
+src/
+  lib/
+    gateway-client.ts  # Protocol-aware WebSocket client (handshake, req/res, events)
+  hooks/
+    useGateway.ts      # React hook wrapping GatewayClient
+    useChat.ts         # Chat state: messages, send, abort, streaming
+    useSessions.ts     # Session list + active session management
+  components/
+    ConnectScreen.tsx   # Auth form (URL + token)
+    Dashboard.tsx       # Main layout (sidebar + chat + status bar)
+    Sidebar.tsx         # Session list
+    ChatView.tsx        # Message list with auto-scroll + streaming indicator
+    MessageBubble.tsx   # Individual message with markdown + syntax highlighting
+    MessageInput.tsx    # Auto-grow textarea + send/stop buttons
+    StatusBar.tsx       # Connection status indicator
+  types/
+    protocol.ts        # TypeScript types for Gateway WS protocol v3
+    global.d.ts        # Window.api type declarations
+```
+
+## Tech Stack
+
+- **Electron** — Desktop shell
+- **React 18** — UI framework
+- **TypeScript** — Type safety
+- **Vite** — Build tooling + HMR
+- **react-markdown** + **remark-gfm** — Markdown rendering
+- **react-syntax-highlighter** — Code block highlighting
+- **electron-store** — Persistent local storage
+
+## Roadmap
+
+- [x] Phase 1: Scaffold (Electron + React + Vite + Tailwind)
+- [x] Phase 2: WebSocket Connection & Auth
+- [x] Phase 3: Chat UI (streaming, markdown, sessions)
+- [ ] Phase 3.5: File & Image Attachments
+- [ ] Phase 4: System / Gateway Stats
+- [ ] Future: Additional integrations
+
+## License
+
+Private — not yet published.
