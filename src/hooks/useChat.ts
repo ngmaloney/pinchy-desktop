@@ -305,7 +305,7 @@ export function useChat(
       
       // Detect WebSocket 1009 "Message Too Large" error
       if (errorMsg.includes('1009') || errorMsg.toLowerCase().includes('too large')) {
-        errorMsg = `⚠️ **Message too large for gateway**\n\nYour OpenClaw gateway has a 1MB message limit. To send larger attachments, increase the limit by adding this to \`~/.openclaw/openclaw.json\`:\n\n\`\`\`json\n{\n  "gateway": {\n    "controlUi": {\n      "maxPayload": 10485760\n    }\n  }\n}\n\`\`\`\n\nThen restart your gateway with \`openclaw gateway restart\`.`
+        errorMsg = `**📎 File too large to send**\n\nThis attachment exceeds the 1MB gateway limit.\n\n**Quick fix:** Try compressing or resizing the image first.\n\n**Advanced:** You can increase the gateway limit by editing \`~/.openclaw/openclaw.json\` - see docs.openclaw.ai for details.`
       }
       
       setMessages((prev) => [...prev, {
