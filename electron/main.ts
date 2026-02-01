@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs/promises'
@@ -138,7 +138,8 @@ function createWindow() {
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
-    win.webContents.openDevTools()
+    // Open DevTools in dev mode only
+    // win.webContents.openDevTools()
   } else {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
@@ -163,4 +164,27 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow()
+  
+  // Register F12 to toggle DevTools
+  globalShortcut.register('F12', () => {
+    const focused = BrowserWindow.getFocusedWindow()
+    if (focused) {
+      focused.webContents.toggleDevTools()
+    }
+  })
+  
+  // Also support Ctrl+Shift+I (or Cmd+Shift+I on Mac)
+  globalShortcut.register('CommandOrControl+Shift+I', () => {
+    const focused = BrowserWindow.getFocusedWindow()
+    if (focused) {
+      focused.webContents.toggleDevTools()
+    }
+  })
+})
+
+app.on('will-quit', () => {
+  // Unregister all shortcuts
+  globalShortcut.unregisterAll()
+})

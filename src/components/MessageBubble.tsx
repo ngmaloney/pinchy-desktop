@@ -25,6 +25,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user'
 
   // Extract data URI images from markdown and convert to attachments
+  // (Large data URIs are already stripped by useChat hook)
   const { processedText, extractedAttachments } = useMemo(() => {
     if (!message.text) return { processedText: '', extractedAttachments: [] }
     
@@ -45,7 +46,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         // Clean up base64 data
         const cleanedBase64 = base64Data.replace(/\s/g, '')
         
-        // Create attachment object
+        // Create attachment object (only small data URIs reach here)
         extracted.push({
           type: 'image',
           mimeType,
@@ -179,6 +180,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                       }}
                     />
                   )
+                },
+                img(props: ComponentPropsWithoutRef<'img'>) {
+                  // Block data URI images from being rendered by ReactMarkdown
+                  // (they should be extracted and rendered as attachments)
+                  if (props.src?.startsWith('data:')) {
+                    return null
+                  }
+                  return <img {...props} style={{ maxWidth: '100%', borderRadius: '6px' }} />
                 },
               }}
             >

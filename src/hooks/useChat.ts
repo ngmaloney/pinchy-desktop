@@ -38,16 +38,68 @@ function uuid(): string {
   return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
+const MAX_ATTACHMENT_SIZE = 500 * 1024 // 500KB
+
+function stripLargeDataUris(text: string): string {
+  // Remove data URI images larger than 500KB to prevent browser errors
+  const dataUriPattern = /!\[([^\]]*)\]\(data:(image\/[^;]+);base64,([^)]+)\)/g
+  
+  let foundAny = false
+  const result = text.replace(dataUriPattern, (match, alt, _mimeType, base64Data) => {
+    foundAny = true
+    const cleanedBase64 = base64Data.replace(/\s/g, '')
+    const estimatedSize = (cleanedBase64.length * 3) / 4
+    const sizeKB = Math.round(estimatedSize / 1024)
+    
+    console.log(`[useChat] Found data URI in text: ${alt || 'image.png'} (~${sizeKB}KB)`)
+    
+    if (estimatedSize > MAX_ATTACHMENT_SIZE) {
+      console.warn(`[useChat] ⚠️ STRIPPING large data URI from text: ${alt || 'image.png'} (~${sizeKB}KB)`)
+      return `[Image too large: ${alt || 'image.png'} (~${sizeKB}KB)]`
+    }
+    
+    console.log(`[useChat] Keeping small data URI: ${alt || 'image.png'} (~${sizeKB}KB)`)
+    // Keep small data URIs as-is
+    return match
+  })
+  
+  if (foundAny) {
+    console.log(`[useChat] stripLargeDataUris processed ${text.length} → ${result.length} chars`)
+  }
+  
+  return result
+}
+
+function filterLargeAttachments(attachments?: ChatAttachment[]): ChatAttachment[] | undefined {
+  if (!attachments || attachments.length === 0) return undefined
+  
+  console.log(`[useChat] Checking ${attachments.length} attachments for size limits`)
+  
+  const filtered = attachments.filter(att => {
+    if (!att.content) return true
+    const size = (att.content.length * 3) / 4
+    console.log(`[useChat] Attachment ${att.fileName || 'unknown'}: ${Math.round(size / 1024)}KB`)
+    if (size > MAX_ATTACHMENT_SIZE) {
+      console.warn(`[useChat] ⚠️ FILTERING OUT large attachment: ${att.fileName || 'unknown'} (~${Math.round(size / 1024)}KB)`)
+      return false
+    }
+    return true
+  })
+  
+  return filtered.length > 0 ? filtered : undefined
+}
+
 function extractText(msg: ChatMessage): string {
-  if (!msg.content) return ''
+  if (!msg || !msg.content) return ''
   // Handle content as plain string (common for user messages in history)
-  if (typeof msg.content === 'string') return msg.content
+  if (typeof msg.content === 'string') return stripLargeDataUris(msg.content)
   // Handle content as array of blocks
   if (!Array.isArray(msg.content) || msg.content.length === 0) return ''
-  return msg.content
-    .filter((b) => b.type === 'text')
+  const text = msg.content
+    .filter((b) => b && b.type === 'text' && b.text)
     .map((b) => b.text)
     .join('')
+  return stripLargeDataUris(text)
 }
 
 export function useChat(
@@ -75,7 +127,7 @@ export function useChat(
 
       if (ev.state === 'delta') {
         const text = extractText(ev.message)
-        const attachments = ev.message.attachments
+        const attachments = filterLargeAttachments(ev.message.attachments)
         setMessages((prev) => {
           const idx = prev.findIndex((m) => m.streaming && m.role === 'assistant')
           if (idx >= 0) {
@@ -94,7 +146,7 @@ export function useChat(
         })
       } else if (ev.state === 'final') {
         const text = extractText(ev.message)
-        const attachments = ev.message.attachments
+        const attachments = filterLargeAttachments(ev.message.attachments)
         setMessages((prev) => {
           const idx = prev.findIndex((m) => m.streaming && m.role === 'assistant')
           if (idx >= 0) {
@@ -164,7 +216,7 @@ export function useChat(
           role: m.role as 'user' | 'assistant',
           text: extractText(m),
           timestamp: m.timestamp,
-          attachments: m.attachments,
+          attachments: filterLargeAttachments(m.attachments),
           streaming: false,
         }))
       setMessages(history)
