@@ -30,31 +30,41 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: List release directory (debug)
+        run: |
+          echo "Contents of release directory:"
+          ls -R release/ || echo "No release directory found"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}
-          path: |
-            release/**/*.dmg
-            release/**/*.AppImage
-            release/**/*.exe
-            release/**/*.zip
+          name: build-${{ matrix.os }}
+          path: release/**/*
+          if-no-files-found: error
 
   publish:
     needs: release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
+      - name: List artifacts (debug)
+        run: |
+          echo "Downloaded artifacts:"
+          ls -R artifacts/
+
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*
+          files: |
+            artifacts/**/*.dmg
+            artifacts/**/*.AppImage
+            artifacts/**/*.exe
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

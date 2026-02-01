@@ -14,8 +14,7 @@
     "target": [
       "dmg"
     ],
-    "artifactName": "${productName}-Mac-${version}.${ext}",
-    "icon": "public/icon.png"
+    "artifactName": "${productName}-Mac-${version}.${ext}"
   },
   "win": {
     "target": [
@@ -38,7 +37,6 @@
     "target": [
       "AppImage"
     ],
-    "artifactName": "${productName}-Linux-${version}.${ext}",
-    "icon": "public/icon.png"
+    "artifactName": "${productName}-Linux-${version}.${ext}"
   }
 }
