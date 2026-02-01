@@ -60,6 +60,7 @@ export function ChatView({
       display: 'flex',
       flexDirection: 'column',
       minWidth: 0,
+      overflow: 'hidden',
     }}>
       {/* Messages list */}
       <div

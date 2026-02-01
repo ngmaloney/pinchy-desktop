@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ConnectionStatus } from '../types/protocol'
 
 interface ConnectScreenProps {
@@ -9,6 +9,21 @@ interface ConnectScreenProps {
 export function ConnectScreen({ onConnect, status }: ConnectScreenProps) {
   const [url, setUrl] = useState('ws://localhost:18789')
   const [token, setToken] = useState('')
+
+  // Load saved credentials into the form fields
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const savedUrl = await window.api.store.get('gatewayUrl') as string
+        const savedToken = await window.api.store.get('token') as string
+        if (savedUrl) setUrl(savedUrl)
+        if (savedToken) setToken(savedToken)
+      } catch {
+        // ignore — defaults are fine
+      }
+    }
+    load()
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +40,7 @@ export function ConnectScreen({ onConnect, status }: ConnectScreenProps) {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      height: '100vh',
+      height: '100%',
       backgroundColor: '#1a1a2e',
       color: '#e0e0e0',
       fontFamily: 'system-ui, -apple-system, sans-serif',

@@ -39,8 +39,9 @@ function App() {
 
   const handleDisconnect = useCallback(async () => {
     disconnect()
-    await window.api.store.delete('token')
     setCredentials(null)
+    // Note: we keep the token in the store so the form pre-fills on next launch.
+    // The user can clear it manually if they want.
   }, [disconnect])
 
   if (loading) {
@@ -49,7 +50,7 @@ function App() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh',
+        height: '100%',
         backgroundColor: '#1a1a2e',
         color: '#888',
       }}>

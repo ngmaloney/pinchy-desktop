@@ -32,7 +32,9 @@ export function Dashboard({ status, client, onDisconnect }: DashboardProps) {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      height: '100vh',
+      height: '100%',
+      width: '100%',
+      overflow: 'hidden',
       backgroundColor: '#1a1a2e',
       color: '#e0e0e0',
       fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -42,6 +44,7 @@ export function Dashboard({ status, client, onDisconnect }: DashboardProps) {
         flex: 1,
         display: 'flex',
         overflow: 'hidden',
+        minWidth: 0,
       }}>
         <Sidebar
           sessions={sessions}
