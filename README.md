@@ -138,14 +138,6 @@ src/               # Renderer process (React)
     ...
 ```
 
-## Part of the Claw Ecosystem
-
-- 🦀 **[ClawMail](https://clawmail.dev)** — Email proxy for AI agents
-- 💬 **ClawChat** — Desktop chat client
-- 📦 **ClawDrop** — Ephemeral file storage (coming soon)
-
-All Claw tools prioritize privacy, self-hosting, and giving you complete control over your AI agent infrastructure.
-
 ## License
 
 Private — not yet published.
