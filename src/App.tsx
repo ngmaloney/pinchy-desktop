@@ -1,35 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/electron-vite.animate.svg'
-import './App.css'
+import { useCallback, useEffect, useState } from 'react'
+import { ConnectScreen } from './components/ConnectScreen'
+import { Dashboard } from './components/Dashboard'
+import { useGateway } from './hooks/useGateway'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [credentials, setCredentials] = useState<{ url: string; token: string } | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  return (
-    <>
-      <div>
-        <a href="https://electron-vite.github.io" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+  // Load saved credentials on mount
+  useEffect(() => {
+    const loadCredentials = async () => {
+      try {
+        const url = await window.api.store.get('gatewayUrl') as string
+        const token = await window.api.store.get('token') as string
+        if (url && token) {
+          setCredentials({ url, token })
+        }
+      } catch (e) {
+        console.error('Failed to load credentials:', e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadCredentials()
+  }, [])
+
+  const handleMessage = useCallback((data: unknown) => {
+    console.log('[Gateway Message]', data)
+  }, [])
+
+  const { status, disconnect } = useGateway({
+    url: credentials?.url || '',
+    token: credentials?.token || '',
+    autoConnect: !!credentials,
+    onMessage: handleMessage,
+  })
+
+  const handleConnect = async (url: string, token: string) => {
+    setCredentials({ url, token })
+    await window.api.store.set('gatewayUrl', url)
+    await window.api.store.set('token', token)
+  }
+
+  const handleDisconnect = async () => {
+    disconnect()
+    await window.api.store.delete('token')
+    setCredentials(null)
+  }
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        backgroundColor: '#1a1a2e',
+        color: '#888',
+      }}>
+        Loading...
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    )
+  }
+
+  if (!credentials || status === 'disconnected' && !credentials) {
+    return <ConnectScreen onConnect={handleConnect} status={status} />
+  }
+
+  return <Dashboard status={status} onDisconnect={handleDisconnect} />
 }
 
 export default App

@@ -1,10 +1,31 @@
-import { app, BrowserWindow } from 'electron'
-import { createRequire } from 'node:module'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import Store from 'electron-store'
 
-const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// Persistent config store
+const store = new Store({
+  name: 'pinchy-config',
+  defaults: {
+    gatewayUrl: 'ws://localhost:18789',
+    token: '',
+  },
+})
+
+// IPC handlers for store access
+ipcMain.handle('store:get', (_event, key: string) => {
+  return store.get(key)
+})
+
+ipcMain.handle('store:set', (_event, key: string, value: unknown) => {
+  store.set(key, value)
+})
+
+ipcMain.handle('store:delete', (_event, key: string) => {
+  store.delete(key as any)
+})
 
 // The built directory structure
 //
@@ -28,9 +49,15 @@ let win: BrowserWindow | null
 
 function createWindow() {
   win = new BrowserWindow({
+    width: 1024,
+    height: 768,
+    minWidth: 800,
+    minHeight: 600,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   })
 
