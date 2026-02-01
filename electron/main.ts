@@ -60,8 +60,8 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1024,
     height: 768,
-    minWidth: 800,
-    minHeight: 600,
+    minWidth: 480,
+    minHeight: 400,
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),

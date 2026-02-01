@@ -35,8 +35,8 @@ export function StatusBar({ status, activeSession, onDisconnect }: StatusBarProp
       color: '#888',
       flexShrink: 0,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
           <span style={{
             width: '8px',
             height: '8px',
@@ -49,7 +49,7 @@ export function StatusBar({ status, activeSession, onDisconnect }: StatusBarProp
           <span>{statusLabels[status]}</span>
         </div>
         <span style={{ color: '#555' }}>|</span>
-        <span style={{ color: '#aaa' }}>{activeSession}</span>
+        <span style={{ color: '#aaa', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeSession}</span>
       </div>
 
       <button

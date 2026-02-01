@@ -22,8 +22,9 @@ function sessionLabel(s: SessionInfo): string {
 export function Sidebar({ sessions, activeSessionKey, onSelectSession, loading }: SidebarProps) {
   return (
     <div style={{
-      width: '220px',
-      minWidth: '220px',
+      width: '200px',
+      minWidth: '140px',
+      flexShrink: 0,
       backgroundColor: '#0f1629',
       borderRight: '1px solid #2a2a4a',
       display: 'flex',
