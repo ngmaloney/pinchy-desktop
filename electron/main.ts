@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import Store from 'electron-store'
+import contextMenu from 'electron-context-menu'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -169,6 +170,14 @@ app.whenReady().then(() => {
   app.setName('ClawChat')
   
   createWindow()
+  
+  // Enable context menu for text inputs, spell check, etc.
+  contextMenu({
+    showSaveImageAs: true,
+    showCopyImageAddress: true,
+    showSearchWithGoogle: false,
+    showInspectElement: VITE_DEV_SERVER_URL ? true : false,
+  })
   
   // Set custom application menu
   const isMac = process.platform === 'darwin'
