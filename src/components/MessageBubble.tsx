@@ -9,10 +9,10 @@ interface MessageBubbleProps {
   message: DisplayMessage
 }
 
-function formatTime(ts?: string): string {
+function formatTime(ts?: string | number): string {
   if (!ts) return ''
   try {
-    const d = new Date(ts)
+    const d = new Date(typeof ts === 'number' ? ts : ts)
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   } catch {
     return ''

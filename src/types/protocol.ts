@@ -62,8 +62,8 @@ export interface ContentBlock {
 
 export interface ChatMessage {
   role: 'user' | 'assistant'
-  content: ContentBlock[]
-  timestamp?: string
+  content: string | ContentBlock[]
+  timestamp?: string | number
   stopReason?: string
   usage?: { inputTokens?: number; outputTokens?: number }
 }

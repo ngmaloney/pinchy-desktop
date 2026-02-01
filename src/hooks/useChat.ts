@@ -13,7 +13,7 @@ export interface DisplayMessage {
   id: string
   role: 'user' | 'assistant'
   text: string
-  timestamp?: string
+  timestamp?: string | number
   streaming?: boolean
   error?: string
 }
@@ -37,7 +37,11 @@ function uuid(): string {
 }
 
 function extractText(msg: ChatMessage): string {
-  if (!msg.content || msg.content.length === 0) return ''
+  if (!msg.content) return ''
+  // Handle content as plain string (common for user messages in history)
+  if (typeof msg.content === 'string') return msg.content
+  // Handle content as array of blocks
+  if (!Array.isArray(msg.content) || msg.content.length === 0) return ''
   return msg.content
     .filter((b) => b.type === 'text')
     .map((b) => b.text)
