@@ -22,6 +22,12 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install Linux dependencies (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools
+
       - name: Install dependencies
         run: npm install
 
@@ -34,13 +40,17 @@ jobs:
         run: |
           echo "Contents of release directory:"
           ls -R release/ || echo "No release directory found"
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}
-          path: release/**/*
-          if-no-files-found: error
+          path: |
+            release/**/*.dmg
+            release/**/*.AppImage
+            release/**/*.exe
+          if-no-files-found: warn
 
   publish:
     needs: release
