@@ -75,11 +75,12 @@ export function useChat(
 
       if (ev.state === 'delta') {
         const text = extractText(ev.message)
+        const attachments = ev.message.attachments
         setMessages((prev) => {
           const idx = prev.findIndex((m) => m.streaming && m.role === 'assistant')
           if (idx >= 0) {
             const updated = [...prev]
-            updated[idx] = { ...updated[idx], text, streaming: true }
+            updated[idx] = { ...updated[idx], text, attachments, streaming: true }
             return updated
           }
           // First delta — create streaming message
@@ -87,11 +88,13 @@ export function useChat(
             id: newMsgId(),
             role: 'assistant' as const,
             text,
+            attachments,
             streaming: true,
           }]
         })
       } else if (ev.state === 'final') {
         const text = extractText(ev.message)
+        const attachments = ev.message.attachments
         setMessages((prev) => {
           const idx = prev.findIndex((m) => m.streaming && m.role === 'assistant')
           if (idx >= 0) {
@@ -99,6 +102,7 @@ export function useChat(
             updated[idx] = {
               ...updated[idx],
               text,
+              attachments,
               streaming: false,
               timestamp: ev.message.timestamp,
             }
@@ -108,6 +112,7 @@ export function useChat(
             id: newMsgId(),
             role: 'assistant' as const,
             text,
+            attachments,
             timestamp: ev.message.timestamp,
             streaming: false,
           }]
@@ -159,6 +164,7 @@ export function useChat(
           role: m.role as 'user' | 'assistant',
           text: extractText(m),
           timestamp: m.timestamp,
+          attachments: m.attachments,
           streaming: false,
         }))
       setMessages(history)

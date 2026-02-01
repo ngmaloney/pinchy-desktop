@@ -66,6 +66,7 @@ export interface ChatMessage {
   timestamp?: string | number
   stopReason?: string
   usage?: { inputTokens?: number; outputTokens?: number }
+  attachments?: ChatAttachment[]
 }
 
 // ── Chat methods ─────────────────────────────────────────────
