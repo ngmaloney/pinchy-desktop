@@ -5,26 +5,35 @@ import Store from 'electron-store'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// Persistent config store
-const store = new Store({
-  name: 'pinchy-config',
-  defaults: {
-    gatewayUrl: 'ws://localhost:18789',
-    token: '',
-  },
-})
+// Persistent config store (lazy init)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let store: Store<any> | null = null
+
+function getStore() {
+  if (!store) {
+    store = new Store({
+      name: 'pinchy-config',
+      defaults: {
+        gatewayUrl: 'ws://localhost:18789',
+        token: '',
+      },
+    })
+    console.log('[Main] Config store initialized at:', store.path)
+  }
+  return store
+}
 
 // IPC handlers for store access
 ipcMain.handle('store:get', (_event, key: string) => {
-  return store.get(key)
+  return getStore().get(key)
 })
 
 ipcMain.handle('store:set', (_event, key: string, value: unknown) => {
-  store.set(key, value)
+  getStore().set(key, value)
 })
 
 ipcMain.handle('store:delete', (_event, key: string) => {
-  store.delete(key as any)
+  getStore().delete(key as any)
 })
 
 // The built directory structure
