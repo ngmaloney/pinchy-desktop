@@ -236,14 +236,26 @@ export function useChat(
     }
   }, [client, status])
 
+  // Track the last session we loaded history for
+  const lastLoadedSessionRef = useRef<string | null>(null)
+  
   // Reload history when active session changes
   useEffect(() => {
     // Only load history when connected and session key is available
     if (status === 'connected' && activeSessionKey) {
-      void loadHistory(activeSessionKey)
+      // Only reload if this is a different session OR we have no messages cached
+      const isDifferentSession = lastLoadedSessionRef.current !== activeSessionKey
+      const hasNoCache = !messagesCacheRef.current.has(activeSessionKey)
+      
+      if (isDifferentSession || hasNoCache) {
+        void loadHistory(activeSessionKey)
+        lastLoadedSessionRef.current = activeSessionKey
+      }
+      // If same session and we have cache, don't reload (preserves failed messages)
     } else if (!activeSessionKey) {
       // Only clear messages if there's no active session
       setMessages([])
+      lastLoadedSessionRef.current = null
     }
     // If disconnected but session key exists, keep existing messages
     // (don't clear on temporary disconnections)
