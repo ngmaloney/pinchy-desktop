@@ -38,6 +38,7 @@ export interface ConnectParams {
   auth: { token: string }
   client: {
     id: string
+    version: string
     platform: string
     mode: string
   }

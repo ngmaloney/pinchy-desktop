@@ -285,9 +285,11 @@ export class GatewayClient {
       scopes: ['operator.read', 'operator.write'],
       auth: { token: this.token },
       client: {
-        id: 'pinchy-desktop',
+        // Protocol requires allowlisted ID/mode
+        id: 'cli',
+        version: '0.0.1',
         platform: 'electron',
-        mode: 'operator',
+        mode: 'ui',
       },
       minProtocol: 3,
       maxProtocol: 3,
