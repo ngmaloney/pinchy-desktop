@@ -5,6 +5,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { DisplayMessage } from '../hooks/useChat'
 import type { ComponentPropsWithoutRef } from 'react'
 import { MessageAttachment } from './MessageAttachment'
+import { useMemo } from 'react'
 
 interface MessageBubbleProps {
   message: DisplayMessage
@@ -22,6 +23,36 @@ function formatTime(ts?: string | number): string {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user'
+
+  // Convert data URI images to blob URLs to avoid CSP issues
+  const processedText = useMemo(() => {
+    if (!message.text) return ''
+    
+    const dataUriPattern = /!\[([^\]]*)\]\(data:(image\/[^;]+);base64,([^)]+)\)/g
+    let text = message.text
+    const matches = [...text.matchAll(dataUriPattern)]
+    
+    for (const match of matches) {
+      const [fullMatch, alt, mimeType, base64Data] = match
+      try {
+        // Convert base64 to blob
+        const binaryString = atob(base64Data.replace(/\s/g, ''))
+        const bytes = new Uint8Array(binaryString.length)
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i)
+        }
+        const blob = new Blob([bytes], { type: mimeType })
+        const blobUrl = URL.createObjectURL(blob)
+        
+        // Replace data URI with blob URL
+        text = text.replace(fullMatch, `![${alt}](${blobUrl})`)
+      } catch (err) {
+        console.error('Failed to convert data URI to blob:', err)
+      }
+    }
+    
+    return text
+  }, [message.text])
 
   return (
     <div style={{
@@ -65,7 +96,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {/* Message text with markdown */}
-        {message.text && (
+        {processedText && (
           <div style={{ overflow: 'hidden' }} className="msg-content">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
@@ -164,7 +195,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 },
               }}
             >
-              {message.text}
+              {processedText}
             </ReactMarkdown>
           </div>
         )}
