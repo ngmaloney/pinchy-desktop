@@ -14,6 +14,16 @@
 
 ![ClawChat Screenshot](screenshot.png)
 
+## Download
+
+Pre-built releases for macOS, Windows, and Linux are available on the [Releases](https://github.com/ngmaloney/clawchat/releases) page.
+
+- **macOS** — `.dmg` installer
+- **Windows** — `.exe` installer
+- **Linux** — `.AppImage` (portable)
+
+Or build from source (see [Quick Start](#quick-start) below).
+
 ## Privacy-First, Self-Hosted
 
 ClawChat is designed to run entirely on your own network. Your conversations, credentials, and data never leave your infrastructure.
