@@ -141,15 +141,28 @@ export function MessageInput({ onSend, onAbort, isStreaming, disabled }: Message
   }, [])
 
   const addFiles = useCallback(async (files: File[]) => {
+    if (!files || files.length === 0) return
+    
     const newAttachments: FileAttachment[] = []
     
     for (const file of files) {
       try {
+        if (!file) {
+          console.warn('[MessageInput] Skipping null/undefined file')
+          continue
+        }
+        console.log('[MessageInput] Processing file:', file.name, file.type, file.size)
         const attachment = await fileToBase64(file)
         newAttachments.push(attachment)
       } catch (err) {
-        console.error('Failed to read file:', file.name, err)
+        console.error('[MessageInput] Failed to read file:', file?.name || 'unknown', err)
+        alert(`Failed to attach file: ${file?.name || 'unknown'}`)
       }
+    }
+
+    if (newAttachments.length === 0) {
+      console.warn('[MessageInput] No valid attachments to add')
+      return
     }
 
     setAttachments(prev => {
@@ -157,7 +170,7 @@ export function MessageInput({ onSend, onAbort, isStreaming, disabled }: Message
       const totalSize = updated.reduce((sum, a) => sum + a.size, 0)
       
       if (totalSize > MAX_TOTAL_SIZE) {
-        alert('Total attachment size exceeds 5MB limit')
+        alert(`Total attachment size (${Math.round(totalSize / 1024 / 1024)}MB) exceeds 5MB limit`)
         return prev
       }
       
@@ -209,9 +222,22 @@ export function MessageInput({ onSend, onAbort, isStreaming, disabled }: Message
     e.stopPropagation()
     setIsDragging(false)
 
-    const files = Array.from(e.dataTransfer.files)
-    if (files.length > 0) {
-      await addFiles(files)
+    try {
+      console.log('[MessageInput] Drop event received')
+      console.log('[MessageInput] dataTransfer.files length:', e.dataTransfer.files.length)
+      console.log('[MessageInput] dataTransfer.items length:', e.dataTransfer.items.length)
+      
+      const files = Array.from(e.dataTransfer.files)
+      console.log('[MessageInput] Files to process:', files.length)
+      
+      if (files.length > 0) {
+        await addFiles(files)
+      } else {
+        console.warn('[MessageInput] No files in drop event')
+      }
+    } catch (err) {
+      console.error('[MessageInput] Error handling drop:', err)
+      alert('Failed to process dropped files')
     }
   }, [addFiles])
 
