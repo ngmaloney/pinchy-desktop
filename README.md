@@ -23,6 +23,7 @@ ClawChat is designed to run entirely on your own network. Your conversations, cr
 - **Markdown rendering** — Code blocks with syntax highlighting, bold, italic, links, lists
 - **Image attachments** — Upload and view images inline
 - **Session management** — Switch between multiple chat sessions
+- **Slash commands** — Type `/` to access commands like `/new`, `/model`, `/thinking`, `/status`, etc.
 - **Auto-reconnect** — Resilient WebSocket connection with exponential backoff
 - **Persistent credentials** — Saved locally for auto-connect on launch
 - **DevTools access** — F12 or Ctrl+Shift+I for debugging
@@ -66,6 +67,21 @@ Outputs packaged binaries to `release/` directory.
 4. Click **Connect**
 
 Your credentials are saved locally and the app will auto-connect on subsequent launches.
+
+## Using Slash Commands
+
+ClawChat supports OpenClaw slash commands for controlling your agent and session. Type `/` in the message input to see available commands:
+
+- `/new` — Start a new session
+- `/model` — Show or switch models
+- `/thinking` — Toggle extended thinking mode
+- `/status` — Show session status and token usage
+- `/stop` — Abort current generation
+- `/compact` — Summarize and compress session history
+- `/verbose` — Toggle verbose output
+- `/reset` — Reset the current session
+
+Commands autocomplete as you type. Just start typing `/` and select from the menu.
 
 ### Remote Gateway via SSH Tunnel
 
