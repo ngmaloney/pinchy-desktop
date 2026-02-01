@@ -32,11 +32,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     let text = message.text
     const matches = [...text.matchAll(dataUriPattern)]
     
+    console.log('[MessageBubble] Found data URI images:', matches.length)
+    
     for (const match of matches) {
       const [fullMatch, alt, mimeType, base64Data] = match
+      console.log('[MessageBubble] Processing data URI:', { alt, mimeType, base64Length: base64Data.length })
       try {
         // Convert base64 to blob
-        const binaryString = atob(base64Data.replace(/\s/g, ''))
+        const cleanedBase64 = base64Data.replace(/\s/g, '')
+        const binaryString = atob(cleanedBase64)
         const bytes = new Uint8Array(binaryString.length)
         for (let i = 0; i < binaryString.length; i++) {
           bytes[i] = binaryString.charCodeAt(i)
@@ -44,10 +48,12 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         const blob = new Blob([bytes], { type: mimeType })
         const blobUrl = URL.createObjectURL(blob)
         
+        console.log('[MessageBubble] Created blob URL:', blobUrl)
+        
         // Replace data URI with blob URL
         text = text.replace(fullMatch, `![${alt}](${blobUrl})`)
       } catch (err) {
-        console.error('Failed to convert data URI to blob:', err)
+        console.error('[MessageBubble] Failed to convert data URI to blob:', err)
       }
     }
     
