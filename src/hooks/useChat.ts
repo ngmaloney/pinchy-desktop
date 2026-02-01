@@ -150,13 +150,15 @@ export function useChat(
         limit: 200,
       }) as unknown as ChatHistoryResponse
 
-      const history: DisplayMessage[] = (res.messages ?? []).map((m) => ({
-        id: newMsgId(),
-        role: m.role,
-        text: extractText(m),
-        timestamp: m.timestamp,
-        streaming: false,
-      }))
+      const history: DisplayMessage[] = (res.messages ?? [])
+        .filter((m) => (m.role === 'user' || m.role === 'assistant') && extractText(m).trim())
+        .map((m) => ({
+          id: newMsgId(),
+          role: m.role as 'user' | 'assistant',
+          text: extractText(m),
+          timestamp: m.timestamp,
+          streaming: false,
+        }))
       setMessages(history)
     } catch (err) {
       console.error('[useChat] Failed to load history:', err)
