@@ -299,7 +299,7 @@ export function MessageInput({ onSend, onAbort, isStreaming, disabled }: Message
           onKeyDown={handleKeyDown}
           onInput={handleInput}
           onPaste={handlePaste}
-          placeholder={disabled ? 'Disconnected…' : 'Message Pinchy… (Enter to send, Shift+Enter for newline, / for commands)'}
+          placeholder={disabled ? 'Disconnected…' : 'Type a message… (Enter to send, Shift+Enter for newline, / for commands)'}
           disabled={disabled}
           rows={1}
           style={{

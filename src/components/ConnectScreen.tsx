@@ -56,7 +56,7 @@ export function ConnectScreen({ onConnect, status }: ConnectScreenProps) {
           margin: '0.5rem 0',
           color: '#fff',
         }}>
-          Pinchy Desktop
+          ClawChat
         </h1>
         <p style={{ color: '#888', fontSize: '0.875rem' }}>
           Connect to your OpenClaw Gateway

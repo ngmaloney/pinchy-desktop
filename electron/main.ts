@@ -13,7 +13,7 @@ let store: Store<any> | null = null
 function getStore() {
   if (!store) {
     store = new Store({
-      name: 'pinchy-config',
+      name: 'clawchat-config',
       defaults: {
         gatewayUrl: 'ws://localhost:18789',
         token: '',
