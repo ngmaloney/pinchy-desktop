@@ -70,14 +70,12 @@ export function useChat(
 
     const unsub = client.on('chat', (payload) => {
       const ev = payload as unknown as ChatEventPayload
-      console.log('[useChat] Raw chat event:', ev)
       // Only process events for the active session
       if (ev.sessionKey !== sessionKeyRef.current) return
 
       if (ev.state === 'delta') {
         const text = extractText(ev.message)
         const attachments = ev.message.attachments
-        console.log('[useChat] DELTA event:', { text: text.substring(0, 50), attachments, fullMessage: ev.message })
         setMessages((prev) => {
           const idx = prev.findIndex((m) => m.streaming && m.role === 'assistant')
           if (idx >= 0) {
@@ -97,7 +95,6 @@ export function useChat(
       } else if (ev.state === 'final') {
         const text = extractText(ev.message)
         const attachments = ev.message.attachments
-        console.log('[useChat] FINAL event:', { text: text.substring(0, 50), attachments, fullMessage: ev.message })
         setMessages((prev) => {
           const idx = prev.findIndex((m) => m.streaming && m.role === 'assistant')
           if (idx >= 0) {
