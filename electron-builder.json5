@@ -1,9 +1,8 @@
-// @see - https://www.electron.build/configuration/configuration
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "YourAppID",
+  "appId": "com.pinchy.desktop",
   "asar": true,
-  "productName": "YourAppName",
+  "productName": "Pinchy Desktop",
   "directories": {
     "output": "release/${version}"
   },
@@ -15,7 +14,8 @@
     "target": [
       "dmg"
     ],
-    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+    "artifactName": "${productName}-Mac-${version}.${ext}",
+    "icon": "public/icon.png"
   },
   "win": {
     "target": [
@@ -38,6 +38,7 @@
     "target": [
       "AppImage"
     ],
-    "artifactName": "${productName}-Linux-${version}.${ext}"
+    "artifactName": "${productName}-Linux-${version}.${ext}",
+    "icon": "public/icon.png"
   }
 }
