@@ -28,6 +28,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   const processedText = useMemo(() => {
     if (!message.text) return ''
     
+    console.log('[MessageBubble] Raw message text:', message.text.substring(0, 200))
+    
     const dataUriPattern = /!\[([^\]]*)\]\(data:(image\/[^;]+);base64,([^)]+)\)/g
     let text = message.text
     const matches = [...text.matchAll(dataUriPattern)]
