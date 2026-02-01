@@ -115,6 +115,31 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     />
                   )
                 },
+                img(props: ComponentPropsWithoutRef<'img'>) {
+                  const { src, alt } = props
+                  return (
+                    <img
+                      {...props}
+                      alt={alt || 'Image'}
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '300px',
+                        borderRadius: '6px',
+                        marginTop: '0.5rem',
+                        marginBottom: '0.5rem',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => {
+                        if (src) {
+                          const win = window.open()
+                          if (win) {
+                            win.document.write(`<img src="${src}" style="max-width:100%; height:auto;" />`)
+                          }
+                        }
+                      }}
+                    />
+                  )
+                },
                 p(props: ComponentPropsWithoutRef<'p'>) {
                   return <p {...props} style={{ margin: '0.35rem 0' }} />
                 },
