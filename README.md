@@ -2,7 +2,7 @@
 
 A desktop chat client for [OpenClaw](https://github.com/openclaw/openclaw) — chat with your AI agent directly from your desktop.
 
-![ClawChat](clawchat-logo.png)
+![ClawChat](clawchat-icon.png)
 
 ![Electron](https://img.shields.io/badge/Electron-30-47848F?logo=electron)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
