@@ -165,6 +165,9 @@ app.on('activate', () => {
 })
 
 app.whenReady().then(() => {
+  // Set app name (important for macOS menu)
+  app.setName('ClawChat')
+  
   createWindow()
   
   // Set custom application menu
