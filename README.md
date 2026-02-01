@@ -73,11 +73,13 @@ Your conversations and credentials stay on your infrastructure. ClawChat is just
 - **Cross-platform** — macOS, Windows, and Linux support
 - **DevTools access** — F12 or Ctrl+Shift+I for debugging
 
-### 🚧 Coming Soon: Node Mode
+### 🔮 Future: Node Mode
 
-Node mode (camera, screen recording, system commands) is currently in development. This will allow ClawChat to act as an OpenClaw node, enabling the gateway to access your local machine's capabilities — making ClawChat the **only cross-platform node solution** for Windows and Linux users.
+Node mode (camera, screen recording, system commands) is planned for a future release. This would allow ClawChat to act as an OpenClaw node, enabling the gateway to access your local machine's capabilities — making ClawChat the **only cross-platform node solution** for Windows and Linux users.
 
-See the [`feature/node-mode-poc`](https://github.com/ngmaloney/clawchat/tree/feature/node-mode-poc) branch for early testing.
+**Why it matters:** Currently, only the macOS app can expose node capabilities. ClawChat would be the first cross-platform option, essential for Windows/Linux users who want their gateway to access camera, screen, or run system commands remotely.
+
+**Status:** Proof-of-concept validated (see [`feature/node-mode-poc`](https://github.com/ngmaloney/clawchat/tree/feature/node-mode-poc) branch). Implementation paused pending further investigation into the protocol requirements. Contributions welcome!
 
 ## Quick Start
 
