@@ -274,7 +274,7 @@ export function MessageInput({ onSend, onAbort, isStreaming, disabled }: Message
         {/* Attach button */}
         <button
           onClick={handleAttachClick}
-          disabled={disabled || isStreaming}
+          disabled={disabled}
           title="Attach files (or drag & drop, or paste images)"
           style={{
             padding: '0.625rem',
@@ -283,10 +283,10 @@ export function MessageInput({ onSend, onAbort, isStreaming, disabled }: Message
             border: '1px solid #2a2a4a',
             borderRadius: '8px',
             fontSize: '1.25rem',
-            cursor: (disabled || isStreaming) ? 'not-allowed' : 'pointer',
+            cursor: disabled ? 'not-allowed' : 'pointer',
             flexShrink: 0,
             lineHeight: 1,
-            opacity: (disabled || isStreaming) ? 0.5 : 1,
+            opacity: disabled ? 0.5 : 1,
           }}
         >
           📎
@@ -300,7 +300,7 @@ export function MessageInput({ onSend, onAbort, isStreaming, disabled }: Message
           onInput={handleInput}
           onPaste={handlePaste}
           placeholder={disabled ? 'Disconnected…' : 'Message Pinchy… (Enter to send, Shift+Enter for newline, / for commands)'}
-          disabled={disabled || isStreaming}
+          disabled={disabled}
           rows={1}
           style={{
             flex: 1,
@@ -343,7 +343,7 @@ export function MessageInput({ onSend, onAbort, isStreaming, disabled }: Message
           <button
             onClick={handleSend}
             disabled={disabled || !text.trim()}
-            title="Send message"
+            title={isStreaming ? "Send message (will queue)" : "Send message"}
             style={{
               padding: '0.625rem 1rem',
               backgroundColor: (!text.trim() || disabled) ? '#333' : '#e85d04',
