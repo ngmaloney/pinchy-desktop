@@ -44,43 +44,28 @@ function stripLargeDataUris(text: string): string {
   // Remove data URI images larger than 500KB to prevent browser errors
   const dataUriPattern = /!\[([^\]]*)\]\(data:(image\/[^;]+);base64,([^)]+)\)/g
   
-  let foundAny = false
-  const result = text.replace(dataUriPattern, (match, alt, _mimeType, base64Data) => {
-    foundAny = true
+  return text.replace(dataUriPattern, (match, alt, _mimeType, base64Data) => {
     const cleanedBase64 = base64Data.replace(/\s/g, '')
     const estimatedSize = (cleanedBase64.length * 3) / 4
-    const sizeKB = Math.round(estimatedSize / 1024)
-    
-    console.log(`[useChat] Found data URI in text: ${alt || 'image.png'} (~${sizeKB}KB)`)
     
     if (estimatedSize > MAX_ATTACHMENT_SIZE) {
-      console.warn(`[useChat] ⚠️ STRIPPING large data URI from text: ${alt || 'image.png'} (~${sizeKB}KB)`)
+      const sizeKB = Math.round(estimatedSize / 1024)
       return `[Image too large: ${alt || 'image.png'} (~${sizeKB}KB)]`
     }
     
-    console.log(`[useChat] Keeping small data URI: ${alt || 'image.png'} (~${sizeKB}KB)`)
     // Keep small data URIs as-is
     return match
   })
-  
-  if (foundAny) {
-    console.log(`[useChat] stripLargeDataUris processed ${text.length} → ${result.length} chars`)
-  }
-  
-  return result
 }
 
 function filterLargeAttachments(attachments?: ChatAttachment[]): ChatAttachment[] | undefined {
   if (!attachments || attachments.length === 0) return undefined
   
-  console.log(`[useChat] Checking ${attachments.length} attachments for size limits`)
-  
   const filtered = attachments.filter(att => {
     if (!att.content) return true
     const size = (att.content.length * 3) / 4
-    console.log(`[useChat] Attachment ${att.fileName || 'unknown'}: ${Math.round(size / 1024)}KB`)
     if (size > MAX_ATTACHMENT_SIZE) {
-      console.warn(`[useChat] ⚠️ FILTERING OUT large attachment: ${att.fileName || 'unknown'} (~${Math.round(size / 1024)}KB)`)
+      console.warn(`[useChat] Filtered out large attachment: ${att.fileName || 'unknown'} (~${Math.round(size / 1024)}KB)`)
       return false
     }
     return true
