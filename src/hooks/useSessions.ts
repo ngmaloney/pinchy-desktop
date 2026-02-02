@@ -18,7 +18,7 @@ export function useSessions(client: GatewayClient | null, status: ConnectionStat
   const [loading, setLoading] = useState(false)
 
   const refreshSessions = useCallback(async () => {
-    if (!client || status !== 'connected') return
+    if (!client) return
     setLoading(true)
     try {
       const res = await client.call('sessions.list', {}) as unknown as SessionsListResponse
@@ -32,12 +32,23 @@ export function useSessions(client: GatewayClient | null, status: ConnectionStat
 
   // Fetch sessions on connect
   useEffect(() => {
-    if (status === 'connected') {
-      void refreshSessions()
+    if (status === 'connected' && client) {
+      setLoading(true)
+      client.call('sessions.list', {})
+        .then((res) => {
+          const data = res as unknown as SessionsListResponse
+          setSessions(data.sessions ?? [])
+        })
+        .catch((err) => {
+          console.error('[useSessions] Failed to list sessions:', err)
+        })
+        .finally(() => {
+          setLoading(false)
+        })
     } else if (status === 'disconnected') {
       setSessions([])
     }
-  }, [status, refreshSessions])
+  }, [status, client])
 
   return {
     sessions,
