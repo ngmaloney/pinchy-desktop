@@ -28,7 +28,7 @@ export function useSessions(client: GatewayClient | null, status: ConnectionStat
     } finally {
       setLoading(false)
     }
-  }, [client, status])
+  }, [client])
 
   // Fetch sessions on connect
   useEffect(() => {
