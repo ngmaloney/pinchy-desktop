@@ -83,7 +83,7 @@ export function Sidebar({ sessions, activeSessionKey, onSelectSession, loading }
               style={{
                 width: '100%',
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 gap: '0.5rem',
                 padding: '0.5rem 0.625rem',
                 marginBottom: '0.25rem',
@@ -104,24 +104,31 @@ export function Sidebar({ sessions, activeSessionKey, onSelectSession, loading }
                 borderRadius: '50%',
                 backgroundColor: isActive ? '#22c55e' : '#555',
                 flexShrink: 0,
+                marginTop: '0.25rem',
               }} />
-              <span style={{
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.25rem',
+                minWidth: 0,
               }}>
-                {sessionLabel(s)}
-              </span>
-              {s.model && (
                 <span style={{
-                  marginLeft: 'auto',
-                  fontSize: '0.65rem',
-                  color: '#555',
-                  flexShrink: 0,
+                  wordBreak: 'break-word',
+                  lineHeight: '1.2',
                 }}>
-                  {s.model}
+                  {sessionLabel(s)}
                 </span>
-              )}
+                {s.model && (
+                  <span style={{
+                    fontSize: '0.65rem',
+                    color: '#666',
+                    lineHeight: '1.2',
+                  }}>
+                    {s.model}
+                  </span>
+                )}
+              </div>
             </button>
           )
         })}
