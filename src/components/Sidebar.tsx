@@ -4,6 +4,7 @@ interface SidebarProps {
   sessions: SessionInfo[]
   activeSessionKey: string
   onSelectSession: (key: string) => void
+  onNewSession: () => void
   loading: boolean
 }
 
@@ -19,7 +20,7 @@ function sessionLabel(s: SessionInfo): string {
   return s.key
 }
 
-export function Sidebar({ sessions, activeSessionKey, onSelectSession, loading }: SidebarProps) {
+export function Sidebar({ sessions, activeSessionKey, onSelectSession, onNewSession, loading }: SidebarProps) {
   return (
     <div style={{
       width: '200px',
@@ -44,6 +45,46 @@ export function Sidebar({ sessions, activeSessionKey, onSelectSession, loading }
         <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#fff' }}>
           Sessions
         </span>
+      </div>
+
+      {/* New Session Button */}
+      <div style={{
+        padding: '0.5rem',
+        borderBottom: '1px solid #2a2a4a',
+        flexShrink: 0,
+      }}>
+        <button
+          onClick={onNewSession}
+          disabled={loading}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem',
+            backgroundColor: '#e85d04',
+            border: 'none',
+            borderRadius: '6px',
+            color: '#fff',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.5 : 1,
+            transition: 'opacity 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            if (!loading) {
+              e.currentTarget.style.backgroundColor = '#d45504'
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#e85d04'
+          }}
+        >
+          <span>+</span>
+          <span>New Session</span>
+        </button>
       </div>
 
       {/* Session list */}

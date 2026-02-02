@@ -29,6 +29,11 @@ export function Dashboard({ status, client, onDisconnect }: DashboardProps) {
     historyLoading,
   } = useChat(client, status, activeSessionKey, refreshSessions)
 
+  const handleNewSession = async () => {
+    // Send /new command to create a new session
+    await send('/new')
+  }
+
   return (
     <div style={{
       display: 'flex',
@@ -51,6 +56,7 @@ export function Dashboard({ status, client, onDisconnect }: DashboardProps) {
           sessions={sessions}
           activeSessionKey={activeSessionKey}
           onSelectSession={setActiveSessionKey}
+          onNewSession={handleNewSession}
           loading={sessionsLoading}
         />
         <ChatView
