@@ -17,6 +17,7 @@ export function Dashboard({ status, client, onDisconnect }: DashboardProps) {
     sessions,
     activeSessionKey,
     setActiveSessionKey,
+    refreshSessions,
     loading: sessionsLoading,
   } = useSessions(client, status)
 
@@ -26,7 +27,7 @@ export function Dashboard({ status, client, onDisconnect }: DashboardProps) {
     abort,
     isStreaming,
     historyLoading,
-  } = useChat(client, status, activeSessionKey)
+  } = useChat(client, status, activeSessionKey, refreshSessions)
 
   return (
     <div style={{

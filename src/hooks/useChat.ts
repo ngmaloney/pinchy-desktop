@@ -91,6 +91,7 @@ export function useChat(
   client: GatewayClient | null,
   status: ConnectionStatus,
   activeSessionKey: string,
+  onSessionsChanged?: () => Promise<void>,
 ): ChatHandle {
   const [messages, setMessages] = useState<DisplayMessage[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
@@ -268,11 +269,14 @@ export function useChat(
   const send = useCallback(async (text: string, attachments?: ChatAttachment[]) => {
     if (!client || status !== 'connected' || !text.trim()) return
 
+    const trimmedText = text.trim()
+    const isNewSessionCommand = trimmedText.toLowerCase().startsWith('/new')
+
     // Append user message immediately
     const userMsg: DisplayMessage = {
       id: newMsgId(),
       role: 'user',
-      text: text.trim(),
+      text: trimmedText,
       timestamp: new Date().toISOString(),
       attachments,
     }
@@ -287,7 +291,7 @@ export function useChat(
         attachments?: ChatAttachment[]
       } = {
         sessionKey: sessionKeyRef.current,
-        message: text.trim(),
+        message: trimmedText,
         idempotencyKey: uuid(),
       }
       
@@ -298,6 +302,16 @@ export function useChat(
       const ack = await client.call('chat.send', params) as unknown as ChatSendAck
 
       activeRunIdRef.current = ack.runId ?? null
+
+      // If this was a /new command, refresh sessions list after a short delay
+      // (gives gateway time to process the command and create the session)
+      if (isNewSessionCommand && onSessionsChanged) {
+        setTimeout(() => {
+          onSessionsChanged().catch(err => 
+            console.error('[useChat] Failed to refresh sessions after /new:', err)
+          )
+        }, 1000)
+      }
     } catch (err) {
       console.error('[useChat] Failed to send:', err)
       
