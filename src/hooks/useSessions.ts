@@ -22,7 +22,13 @@ export function useSessions(client: GatewayClient | null, status: ConnectionStat
     setLoading(true)
     try {
       const res = await client.call('sessions.list', {}) as unknown as SessionsListResponse
-      setSessions(res.sessions ?? [])
+      // Filter to only show active sessions:
+      // - Main session always shown
+      // - Sessions with actual conversation (totalTokens > 0)
+      const activeSessions = (res.sessions ?? []).filter(s => 
+        s.key === DEFAULT_SESSION_KEY || (s.totalTokens ?? 0) > 0
+      )
+      setSessions(activeSessions)
     } catch (err) {
       console.error('[useSessions] Failed to list sessions:', err)
     } finally {
