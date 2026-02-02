@@ -149,6 +149,7 @@ export interface SessionInfo {
   label?: string
   channel?: string
   model?: string
+  totalTokens?: number
   [key: string]: unknown
 }
 
