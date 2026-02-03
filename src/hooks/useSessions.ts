@@ -45,6 +45,19 @@ export function useSessions(client: GatewayClient | null, status: ConnectionStat
     }
   }, [status, refreshSessions])
 
+  // Subscribe to chat events to auto-refresh session list when new activity occurs
+  useEffect(() => {
+    if (!client || status !== 'connected') return
+
+    const unsub = client.on('chat', () => {
+      // Refresh session list whenever any chat event occurs
+      // This ensures new sessions and updated sessions appear automatically
+      void refreshSessions()
+    })
+
+    return unsub
+  }, [client, status, refreshSessions])
+
   return {
     sessions,
     activeSessionKey,
