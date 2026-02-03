@@ -45,6 +45,26 @@ export function useSessions(client: GatewayClient | null, status: ConnectionStat
     }
   }, [status, refreshSessions])
 
+  // Subscribe to chat events to auto-refresh session list when new activity occurs
+  useEffect(() => {
+    if (!client || status !== 'connected') return
+
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null
+
+    const unsub = client.on('chat', () => {
+      // Debounce refresh to avoid excessive API calls during streaming
+      if (refreshTimer) clearTimeout(refreshTimer)
+      refreshTimer = setTimeout(() => {
+        void refreshSessions()
+      }, 1000) // Wait 1s after last chat event before refreshing
+    })
+
+    return () => {
+      unsub()
+      if (refreshTimer) clearTimeout(refreshTimer)
+    }
+  }, [client, status, refreshSessions])
+
   return {
     sessions,
     activeSessionKey,
